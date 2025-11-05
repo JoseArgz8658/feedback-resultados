@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta TechSisters</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f0ebf8;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .form-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+        
+        .form-header p {
+            font-size: 14px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+        
+        .form-body {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .question-block {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .question-block:last-child {
+            border-bottom: none;
+        }
+        
+        .question-title {
+            font-size: 16px;
+            color: #202124;
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+        
+        .required {
+            color: #d93025;
+            margin-left: 4px;
+        }
+        
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .likert-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 12px;
+            color: #5f6368;
+            margin-bottom: 10px;
+        }
+        
+        .likert-label-start {
+            text-align: left;
+            flex: 1;
+        }
+        
+        .likert-label-end {
+            text-align: right;
+            flex: 1;
+        }
+        
+        .likert-options {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .likert-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .likert-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #673ab7;
+        }
+        
+        .likert-option label {
+            font-size: 14px;
+            color: #5f6368;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-family: 'Roboto', Arial, sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #673ab7;
+        }
+        
+        .radio-group {
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: #673ab7;
+        }
+        
+        .radio-option label {
+            font-size: 14px;
+            color: #202124;
+            cursor: pointer;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        
+        .results-header {
+            font-size: 24px;
+            color: #202124;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #673ab7;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .results-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            color: #5f6368;
+            border-bottom: 2px solid #dadce0;
+        }
+        
+        .results-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #202124;
+        }
+        
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .chart-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            color: #202124;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- FORMULARIO -->
+        <div class="form-header">
+            <h1>TechSisters: Validación de Prototipo</h1>
+            <p>Encuesta de feedback sobre "TechSisters: Mentorías y Red de Referentes Femeninos en Tecnología"</p>
+        </div>
+        
+        <div class="form-body">
+            <!-- Pregunta 1 -->
+            <div class="question-block">
+                <div class="question-title">
+                    1. Perfil del encuestado/a <span class="required">*</span>
+                </div>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="perfil" id="estudiante" value="estudiante">
+                        <label for="estudiante">Estudiante</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="perfil" id="docente" value="docente">
+                        <label for="docente">Docente</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 2 -->
+            <div class="question-block">
+                <div class="question-title">
+                    2. ¿Qué tan claro te parece el concepto del prototipo TechSisters? <span class="required">*</span>
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-label-start">Nada claro</span>
+                    <span class="likert-label-end">Muy claro</span>
+                </div>
+                <div class="likert-options">
+                    <div class="likert-option">
+                        <input type="radio" name="claridad" id="claridad1" value="1">
+                        <label for="claridad1">1</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="claridad" id="claridad2" value="2">
+                        <label for="claridad2">2</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="claridad" id="claridad3" value="3">
+                        <label for="claridad3">3</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="claridad" id="claridad4" value="4">
+                        <label for="claridad4">4</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="claridad" id="claridad5" value="5">
+                        <label for="claridad5">5</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 3 -->
+            <div class="question-block">
+                <div class="question-title">
+                    3. ¿Qué tan útil consideras esta plataforma para mujeres en tecnología? <span class="required">*</span>
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-label-start">Nada útil</span>
+                    <span class="likert-label-end">Muy útil</span>
+                </div>
+                <div class="likert-options">
+                    <div class="likert-option">
+                        <input type="radio" name="utilidad" id="utilidad1" value="1">
+                        <label for="utilidad1">1</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="utilidad" id="utilidad2" value="2">
+                        <label for="utilidad2">2</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="utilidad" id="utilidad3" value="3">
+                        <label for="utilidad3">3</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="utilidad" id="utilidad4" value="4">
+                        <label for="utilidad4">4</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="utilidad" id="utilidad5" value="5">
+                        <label for="utilidad5">5</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 4 -->
+            <div class="question-block">
+                <div class="question-title">
+                    4. ¿Cómo calificas el diseño visual del prototipo? <span class="required">*</span>
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-label-start">Muy malo</span>
+                    <span class="likert-label-end">Excelente</span>
+                </div>
+                <div class="likert-options">
+                    <div class="likert-option">
+                        <input type="radio" name="diseno" id="diseno1" value="1">
+                        <label for="diseno1">1</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="diseno" id="diseno2" value="2">
+                        <label for="diseno2">2</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="diseno" id="diseno3" value="3">
+                        <label for="diseno3">3</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="diseno" id="diseno4" value="4">
+                        <label for="diseno4">4</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="diseno" id="diseno5" value="5">
+                        <label for="diseno5">5</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 5 -->
+            <div class="question-block">
+                <div class="question-title">
+                    5. ¿Qué tan fácil de usar te parece la plataforma? <span class="required">*</span>
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-label-start">Muy difícil</span>
+                    <span class="likert-label-end">Muy fácil</span>
+                </div>
+                <div class="likert-options">
+                    <div class="likert-option">
+                        <input type="radio" name="facilidad" id="facilidad1" value="1">
+                        <label for="facilidad1">1</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="facilidad" id="facilidad2" value="2">
+                        <label for="facilidad2">2</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="facilidad" id="facilidad3" value="3">
+                        <label for="facilidad3">3</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="facilidad" id="facilidad4" value="4">
+                        <label for="facilidad4">4</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="facilidad" id="facilidad5" value="5">
+                        <label for="facilidad5">5</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 6 -->
+            <div class="question-block">
+                <div class="question-title">
+                    6. ¿Qué tan relevante es esta iniciativa para promover la inclusión de mujeres en tecnología? <span class="required">*</span>
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-label-start">Nada relevante</span>
+                    <span class="likert-label-end">Muy relevante</span>
+                </div>
+                <div class="likert-options">
+                    <div class="likert-option">
+                        <input type="radio" name="relevancia" id="relevancia1" value="1">
+                        <label for="relevancia1">1</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="relevancia" id="relevancia2" value="2">
+                        <label for="relevancia2">2</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="relevancia" id="relevancia3" value="3">
+                        <label for="relevancia3">3</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="relevancia" id="relevancia4" value="4">
+                        <label for="relevancia4">4</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" name="relevancia" id="relevancia5" value="5">
+                        <label for="relevancia5">5</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pregunta 7 -->
+            <div class="question-block">
+                <div class="question-title">
+                    7. ¿Qué aspectos del prototipo te gustan más?
+                </div>
+                <textarea placeholder="Escribe tu respuesta aquí..."></textarea>
+            </div>
+            
+            <!-- Pregunta 8 -->
+            <div class="question-block">
+                <div class="question-title">
+                    8. ¿Qué aspectos mejorarías del prototipo?
+                </div>
+                <textarea placeholder="Escribe tu respuesta aquí..."></textarea>
+            </div>
+            
+            <!-- Pregunta 9 -->
+            <div class="question-block">
+                <div class="question-title">
+                    9. Sugerencias adicionales o comentarios
+                </div>
+                <textarea placeholder="Escribe tu respuesta aquí..."></textarea>
+            </div>
+        </div>
+        
+        <!-- RESULTADOS -->
+        <div class="results-section">
+            <h2 class="results-header">📊 Resultados del Feedback</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">4.5</div>
+                    <div class="stat-label">PROMEDIO GENERAL</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">RESPUESTAS TOTALES</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">TASA DE COMPLETADO</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 16px; color: #202124; margin-bottom: 15px; font-weight: 500;">Respuestas por participante</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Perfil</th>
+                        <th>Claridad</th>
+                        <th>Utilidad</th>
+                        <th>Diseño</th>
+                        <th>Facilidad</th>
+                        <th>Relevancia</th>
+                        <th>Promedio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Participante 1</td>
+                        <td>Estudiante</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>4.6</td>
+                    </tr>
+                    <tr>
+                        <td>Participante 2</td>
+                        <td>Estudiante</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>4.6</td>
+                    </tr>
+                    <tr>
+                        <td>Participante 3</td>
+                        <td>Estudiante</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>4.2</td>
+                    </tr>
+                    <tr>
+                        <td>Participante 4</td>
+                        <td>Estudiante</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>4.8</td>
+                    </tr>
+                    <tr>
+                        <td>Participante 5</td>
+                        <td>Docente</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>4.6</td>
+                    </tr>
+                    <tr>
+                        <td>Participante 6</td>
+                        <td>Docente</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>4.2</td>
+                    </tr>
+                    <tr style="background: #f8f9fa; font-weight: 500;">
+                        <td colspan="2"><strong>PROMEDIO TOTAL</strong></td>
+                        <td><strong>4.5</strong></td>
+                        <td><strong>4.7</strong></td>
+                        <td><strong>4.0</strong></td>
+                        <td><strong>4.3</strong></td>
+                        <td><strong>5.0</strong></td>
+                        <td><strong>4.5</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Promedio de Evaluación por Categoría</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Distribución de Respuestas por Perfil</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Gráfico de barras
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Claridad', 'Utilidad', 'Diseño Visual', 'Facilidad de Uso', 'Relevancia'],
+                datasets: [{
+                    label: 'Promedio de Calificación',
+                    data: [4.5, 4.7, 4.0, 4.3, 5.0],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(102, 126, 234, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(118, 75, 162, 1)',
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(118, 75, 162, 1)',
+                        'rgba(102, 126, 234, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de pastel
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: ['Estudiantes', 'Docentes'],
+                datasets: [{
+                    data: [4, 2],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(118, 75, 162, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
